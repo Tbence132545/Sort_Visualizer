@@ -16,7 +16,9 @@ class DrawCanvas extends JPanel implements ActionListener {
     private int insertionJIndex;
     private boolean isSwapping;
     private int selectionMinIndex;
-
+    public int[] getArray(){
+        return this.array;
+    }
     public DrawCanvas() {
         setPreferredSize(new Dimension(800, 400));
         setBackground(Color.WHITE);
@@ -174,22 +176,5 @@ class DrawCanvas extends JPanel implements ActionListener {
         });
         timer.start();
     }
-
-    public void reset() {
-        array = new int[]{5, 3, 8, 4, 2, 7, 1, 6, 9, 10, 7, 11, 9};
-        currentIndex = 0;
-        currentSwap = 0;
-        sortingFinished = false;
-        currentBlueIndex = 0;
-        insertionIndex = 1;
-        insertionJIndex = insertionIndex - 1;
-        isSwapping = false;
-        selectionMinIndex = currentIndex;
-        if (timer != null && timer.isRunning()) {
-            timer.stop(); // Stop the timer if it's running
-        }
-        repaint(); // Repaint the canvas to reflect the changes
-    }
-
 
 }
