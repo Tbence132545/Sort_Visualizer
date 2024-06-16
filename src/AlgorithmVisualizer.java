@@ -48,7 +48,8 @@ public class AlgorithmVisualizer extends JFrame {
                     panel.remove(currentCanvas);
                     panel.add(binaryTreeView, BorderLayout.CENTER); // Add Binary Tree View to the center
                     binaryTreeView.updateArray(currentCanvas.getArray()); // Update array in binary tree view
-                    binaryTreeView.setVisible(true); // Show binary tree view when heap sort is selected
+                    binaryTreeView.setVisible(true);
+                    binaryTreeView.startSorting();// Show binary tree view when heap sort is selected
                 } else {
                     panel.remove(binaryTreeView);
                     panel.add(currentCanvas, BorderLayout.CENTER); // Add canvas to the center
