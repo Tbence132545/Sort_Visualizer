@@ -2,7 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import javax.swing.border.LineBorder;
+import java.awt.event.MouseEvent;
 
 class DrawCanvas extends JPanel implements ActionListener {
     private int[] array;
@@ -19,12 +21,33 @@ class DrawCanvas extends JPanel implements ActionListener {
     public int[] getArray(){
         return this.array;
     }
+
     public DrawCanvas() {
         setPreferredSize(new Dimension(800, 400));
         setBackground(Color.WHITE);
         array = new int[]{5, 3, 8, 4, 2, 7, 1, 6, 9, 10, 7, 11, 9};
         timer = new Timer(250, this);
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int width = getWidth() / array.length;
+                int clickedIndex = e.getX() / width;
+                if (clickedIndex >= 0 && clickedIndex < array.length) {
+                    String newValueStr = JOptionPane.showInputDialog("Enter new value:");
+                    if (newValueStr != null) {
+                        try {
+                            int newValue = Integer.parseInt(newValueStr);
+                            array[clickedIndex] = newValue;
+                            repaint();
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(null, "Invalid input. Please enter an integer.");
+                        }
+                    }
+                }
+            }
+        });
     }
+
 
     public void startAlgorithm(String selectedAlgorithm) {
         selectedSort = selectedAlgorithm;
