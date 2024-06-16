@@ -11,10 +11,11 @@ class DrawCanvas extends JPanel implements ActionListener {
     private int currentSwap = 0;
     private boolean sortingFinished = false;
     private int currentBlueIndex = 0;
-    private String selectedSort = "Bubble Sort";
+    private String selectedSort ="Bubble Sort";
     private int insertionIndex = 1;
     private int insertionJIndex;
     private boolean isSwapping;
+    private int selectionMinIndex;
 
     public DrawCanvas() {
         setPreferredSize(new Dimension(800, 400));
@@ -31,8 +32,11 @@ class DrawCanvas extends JPanel implements ActionListener {
         insertionIndex = 1;
         insertionJIndex = insertionIndex - 1;
         isSwapping = false;
+        selectionMinIndex = currentIndex;
         System.out.println("Algorithm started");
-        timer.start();
+        if(!timer.isRunning()){
+            timer.start();
+        }
     }
 
     @Override
@@ -41,11 +45,17 @@ class DrawCanvas extends JPanel implements ActionListener {
         drawArray(g);
     }
 
+
     private void drawArray(Graphics g) {
         int width = getWidth() / array.length;
         for (int i = 0; i < array.length; i++) {
             int height = array[i] * 50;
-            if (sortingFinished || (selectedSort.equals("Insertion Sort") && i == insertionIndex) || (selectedSort.equals("Insertion Sort") && isSwapping && i == insertionJIndex + 1) || selectedSort.equals("Bubble Sort") && i==currentSwap) {
+            if (sortingFinished ||
+                    (selectedSort.equals("Insertion Sort") && i == insertionIndex) ||
+                    (selectedSort.equals("Insertion Sort") && isSwapping && i == insertionJIndex + 1) ||
+                    (selectedSort.equals("Bubble Sort") && i == currentSwap) ||
+                    (selectedSort.equals("Selection Sort") && i == selectionMinIndex) ||
+                    (selectedSort.equals("Selection Sort") && i == currentIndex)) {
                 g.setColor(Color.BLUE);
                 g.fillRect(i * width, getHeight() - height, width, height);
                 g.setColor(Color.BLACK);
@@ -72,9 +82,10 @@ class DrawCanvas extends JPanel implements ActionListener {
             case "Bubble Sort":
                 bubbleSortStep();
                 break;
-            case "QuickSort":
+            case "Selection Sort":
+                selectionSortStep();
                 break;
-            case "SelectionSort":
+            case "QuickSort":
                 break;
             case "MergeSort":
                 break;
@@ -102,9 +113,11 @@ class DrawCanvas extends JPanel implements ActionListener {
             timer.stop();
             System.out.println("Insertion Sort finished");
             sortingFinished = true;
+            animateSortedArray();
         }
     }
-    private void bubbleSortStep(){
+
+    private void bubbleSortStep() {
         if (currentIndex < array.length - 1) {
             if (currentSwap < array.length - currentIndex - 1) {
                 if (array[currentSwap] > array[currentSwap + 1]) {
@@ -119,9 +132,64 @@ class DrawCanvas extends JPanel implements ActionListener {
             }
             repaint();
         } else {
-            sortingFinished= true;
             timer.stop();
-
+            sortingFinished = true;
+            animateSortedArray();
         }
     }
-  }
+
+    private void selectionSortStep() {
+        if (currentIndex < array.length - 1) {
+            if (currentSwap < array.length) {
+                if (array[currentSwap] < array[selectionMinIndex]) {
+                    selectionMinIndex = currentSwap;
+                }
+                currentSwap++;
+            } else {
+                // Swap the found minimum element with the first element
+                int temp = array[selectionMinIndex];
+                array[selectionMinIndex] = array[currentIndex];
+                array[currentIndex] = temp;
+
+                // Move to the next element in the array
+                currentIndex++;
+                currentSwap = currentIndex;
+                selectionMinIndex = currentIndex;
+            }
+        } else {
+            timer.stop();
+            sortingFinished = true;
+            animateSortedArray();
+        }
+        repaint();
+    }
+
+    private void animateSortedArray() {
+        timer = new Timer(250, e -> {
+            currentBlueIndex++;
+            if (currentBlueIndex >= array.length) {
+                ((Timer) e.getSource()).stop();
+            }
+            repaint();
+        });
+        timer.start();
+    }
+
+    public void reset() {
+        array = new int[]{5, 3, 8, 4, 2, 7, 1, 6, 9, 10, 7, 11, 9};
+        currentIndex = 0;
+        currentSwap = 0;
+        sortingFinished = false;
+        currentBlueIndex = 0;
+        insertionIndex = 1;
+        insertionJIndex = insertionIndex - 1;
+        isSwapping = false;
+        selectionMinIndex = currentIndex;
+        if (timer != null && timer.isRunning()) {
+            timer.stop(); // Stop the timer if it's running
+        }
+        repaint(); // Repaint the canvas to reflect the changes
+    }
+
+
+}
