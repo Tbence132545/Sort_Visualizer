@@ -24,8 +24,10 @@ class DrawCanvas extends JPanel implements ActionListener {
     private int h;
     private int pivot;
     private int top = -1;
-    private int delay = 15;
-
+    private int curr_size=1;
+    private int left_start=0;
+    private int mergeStartIndex = 0;
+    private int mergeEndIndex = 0;
     public int[] getArray() {
         return this.array;
     }
@@ -36,14 +38,10 @@ class DrawCanvas extends JPanel implements ActionListener {
         array = new int[50];
         h = array.length - 1;
         stack = new int[h - l + 1];
-
-
         Random rnd = new Random();
         for (int i = 0; i < 50; i++) {
             array[i] = rnd.nextInt(1, 100);
         }
-
-
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -66,7 +64,7 @@ class DrawCanvas extends JPanel implements ActionListener {
     }
 
     public void startAlgorithm(String selectedAlgorithm) {
-        if(selectedAlgorithm.equals("Quick Sort")){
+        if(selectedAlgorithm.equals("Quick Sort") || selectedAlgorithm.equals("Merge Sort")){
             timer = new Timer(150, this);
         }
         else{
@@ -105,7 +103,9 @@ class DrawCanvas extends JPanel implements ActionListener {
                     (selectedSort.equals("Bubble Sort") && (i == currentSwap)) ||
                     (selectedSort.equals("Selection Sort") && (i == selectionMinIndex)) ||
                     (selectedSort.equals("Selection Sort") && (i == currentIndex)) ||
-                    (selectedSort.equals("Quick Sort")&&  (i == h) || (i==l))) {
+                    (selectedSort.equals("Quick Sort")&&  ((i == h) || (i==l)))||
+                    (selectedSort.equals("Merge Sort") && (i == left_start - 1 || i == left_start + curr_size - 1)))
+             {
                 g.setColor(Color.BLUE);
                 g.fillRect(i * width, getHeight() - height, width, height);
                 g.setColor(Color.BLACK);
@@ -116,7 +116,9 @@ class DrawCanvas extends JPanel implements ActionListener {
                 g.fillRect(i * width, getHeight() - height, width, height);
                 g.setColor(Color.BLACK);
                 g.drawRect(i * width, getHeight() - height, width, height);
-            }else {
+
+            }
+            else {
                 g.setColor(Color.WHITE);
                 g.fillRect(i * width, getHeight() - height, width, height);
                 g.setColor(Color.BLACK);
@@ -144,11 +146,76 @@ class DrawCanvas extends JPanel implements ActionListener {
             case "Quick Sort":
                 quickSortStep();
                 break;
-            case "MergeSort":
+            case "Merge Sort":
+                mergeSortStep();
                 break;
         }
         repaint();
     }
+    private void mergeSortStep() {
+        if (curr_size <= array.length) {
+            if (left_start <= array.length - curr_size) {
+                int mid = Math.min(left_start + curr_size - 1, array.length - 1);
+                int right_end = Math.min(left_start + 2 * curr_size - 1, array.length - 1);
+                merge(left_start, mid, right_end);
+                left_start += curr_size * 2;
+            } else {
+                curr_size = 2 * curr_size;
+                left_start = 0; // Reset left_start for the next pass
+            }
+        } else {
+            timer.stop();
+            System.out.println("Merge Sort finished");
+            sortingFinished = true;
+            animateSortedArray();
+        }
+    }
+
+
+
+    private void merge(int l, int m, int r) {
+        int n1 = m - l + 1;
+        int n2 = r - m;
+
+        int L[] = new int[n1];
+        int R[] = new int[n2];
+
+        for (int i = 0; i < n1; i++) {
+            L[i] = array[l + i];
+        }
+        for (int j = 0; j < n2; j++) {
+            R[j] = array[m + 1 + j];
+        }
+
+        int i = 0, j = 0;
+        int k = l;
+
+        while (i < n1 && j < n2) {
+            if (L[i] <= R[j]) {
+                array[k] = L[i];
+                i++;
+            } else {
+                array[k] = R[j];
+                j++;
+            }
+            k++;
+        }
+
+        while (i < n1) {
+            array[k] = L[i];
+            i++;
+            k++;
+        }
+
+        while (j < n2) {
+            array[k] = R[j];
+            j++;
+            k++;
+        }
+        mergeStartIndex = l;
+        mergeEndIndex = r;
+    }
+
 
     private void insertionSortStep() {
         if (insertionIndex < array.length) {
@@ -227,7 +294,6 @@ class DrawCanvas extends JPanel implements ActionListener {
                 stack[++top] = l;
                 stack[++top] = h;
             }
-
             if (top >= 0) { // If the stack is not empty, perform a single step of quicksort
                 h = stack[top--];
                 l = stack[top--];
