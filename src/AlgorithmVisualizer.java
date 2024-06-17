@@ -29,7 +29,7 @@ public class AlgorithmVisualizer extends JFrame {
         JButton resetButton = new JButton("Reset");
         controlPanel.add(resetButton);
 
-        String[] algorithms = {"Bubble Sort", "Selection Sort", "Insertion Sort", "Heap Sort"};
+        String[] algorithms = {"Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort", "Quick Sort", "Heap Sort"};
         JComboBox<String> algorithmComboBox = new JComboBox<>(algorithms);
         controlPanel.add(algorithmComboBox);
 

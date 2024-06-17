@@ -25,7 +25,7 @@ class BinaryTreeView extends JPanel implements ActionListener {
         this.heapSize = array.length;
 
         // Timer to perform sorting steps
-        timer = new Timer(300, this);
+        timer = new Timer(15, this);
     }
 
     @Override

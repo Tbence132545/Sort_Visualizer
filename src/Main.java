@@ -7,4 +7,5 @@ public class Main {
         SwingUtilities.invokeLater(() -> {AlgorithmVisualizer visualizer = new AlgorithmVisualizer(); visualizer.setVisible(true);});
 
     }
+
 }

@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import javax.swing.border.LineBorder;
 import java.awt.event.MouseEvent;
+import java.util.Random;
 
 class DrawCanvas extends JPanel implements ActionListener {
     private int[] array;
@@ -13,20 +14,36 @@ class DrawCanvas extends JPanel implements ActionListener {
     private int currentSwap = 0;
     private boolean sortingFinished = false;
     private int currentBlueIndex = 0;
-    private String selectedSort ="Bubble Sort";
+    private String selectedSort = "Bubble Sort";
     private int insertionIndex = 1;
     private int insertionJIndex;
     private boolean isSwapping;
     private int selectionMinIndex;
-    public int[] getArray(){
+    private int[] stack;
+    private int l = 0;
+    private int h;
+    private int pivot;
+    private int top = -1;
+    private int delay = 15;
+
+    public int[] getArray() {
         return this.array;
     }
 
     public DrawCanvas() {
         setPreferredSize(new Dimension(800, 400));
         setBackground(Color.WHITE);
-        array = new int[]{5, 3, 8, 4, 2, 7, 1, 6, 9, 10, 7, 11, 9};
-        timer = new Timer(250, this);
+        array = new int[50];
+        h = array.length - 1;
+        stack = new int[h - l + 1];
+
+
+        Random rnd = new Random();
+        for (int i = 0; i < 50; i++) {
+            array[i] = rnd.nextInt(1, 100);
+        }
+
+
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -48,8 +65,14 @@ class DrawCanvas extends JPanel implements ActionListener {
         });
     }
 
-
     public void startAlgorithm(String selectedAlgorithm) {
+        if(selectedAlgorithm.equals("Quick Sort")){
+            timer = new Timer(150, this);
+        }
+        else{
+            timer = new Timer(15, this);
+        }
+
         selectedSort = selectedAlgorithm;
         currentIndex = 0;
         currentSwap = 0;
@@ -58,8 +81,10 @@ class DrawCanvas extends JPanel implements ActionListener {
         insertionJIndex = insertionIndex - 1;
         isSwapping = false;
         selectionMinIndex = currentIndex;
+        l = 0;
+        h = array.length - 1;
         System.out.println("Algorithm started");
-        if(!timer.isRunning()){
+        if (!timer.isRunning()) {
             timer.start();
         }
     }
@@ -70,22 +95,28 @@ class DrawCanvas extends JPanel implements ActionListener {
         drawArray(g);
     }
 
-
     private void drawArray(Graphics g) {
         int width = getWidth() / array.length;
         for (int i = 0; i < array.length; i++) {
-            int height = array[i] * 50;
+            int height = array[i] * 7;
             if (sortingFinished ||
-                    (selectedSort.equals("Insertion Sort") && i == insertionIndex) ||
-                    (selectedSort.equals("Insertion Sort") && isSwapping && i == insertionJIndex + 1) ||
-                    (selectedSort.equals("Bubble Sort") && i == currentSwap) ||
-                    (selectedSort.equals("Selection Sort") && i == selectionMinIndex) ||
-                    (selectedSort.equals("Selection Sort") && i == currentIndex)) {
+                    (selectedSort.equals("Insertion Sort") && (i == insertionIndex)) ||
+                    (selectedSort.equals("Insertion Sort") && isSwapping && (i == (insertionJIndex + 1))) ||
+                    (selectedSort.equals("Bubble Sort") && (i == currentSwap)) ||
+                    (selectedSort.equals("Selection Sort") && (i == selectionMinIndex)) ||
+                    (selectedSort.equals("Selection Sort") && (i == currentIndex)) ||
+                    (selectedSort.equals("Quick Sort")&&  (i == h) || (i==l))) {
                 g.setColor(Color.BLUE);
                 g.fillRect(i * width, getHeight() - height, width, height);
                 g.setColor(Color.BLACK);
                 g.drawRect(i * width, getHeight() - height, width, height);
-            } else {
+            }
+            else if(selectedSort.equals("Quick Sort") && i==pivot){
+                g.setColor(Color.GREEN);
+                g.fillRect(i * width, getHeight() - height, width, height);
+                g.setColor(Color.BLACK);
+                g.drawRect(i * width, getHeight() - height, width, height);
+            }else {
                 g.setColor(Color.WHITE);
                 g.fillRect(i * width, getHeight() - height, width, height);
                 g.setColor(Color.BLACK);
@@ -110,7 +141,8 @@ class DrawCanvas extends JPanel implements ActionListener {
             case "Selection Sort":
                 selectionSortStep();
                 break;
-            case "QuickSort":
+            case "Quick Sort":
+                quickSortStep();
                 break;
             case "MergeSort":
                 break;
@@ -189,6 +221,55 @@ class DrawCanvas extends JPanel implements ActionListener {
         repaint();
     }
 
+    private void quickSortStep() {
+        if (!sortingFinished) {
+            if (top < 0) { // If the stack is empty, initialize it
+                stack[++top] = l;
+                stack[++top] = h;
+            }
+
+            if (top >= 0) { // If the stack is not empty, perform a single step of quicksort
+                h = stack[top--];
+                l = stack[top--];
+
+                pivot = array[h];
+                int i = (l - 1);
+
+                for (int j = l; j <= h - 1; j++) {
+                    if (array[j] <= pivot) {
+                        i++;
+                        int temp = array[i];
+                        array[i] = array[j];
+                        array[j] = temp;
+                    }
+                }
+
+                int temp = array[i + 1];
+                array[i + 1] = array[h];
+                array[h] = temp;
+                int p = i + 1;
+
+                if (p - 1 > l) { // Push the left subarray boundaries to the stack
+                    stack[++top] = l;
+                    stack[++top] = p - 1;
+                }
+
+                if (p + 1 < h) { // Push the right subarray boundaries to the stack
+                    stack[++top] = p + 1;
+                    stack[++top] = h;
+                }
+
+                if (top < 0) { // If the stack is empty, sorting is finished
+                    sortingFinished = true;
+                    animateSortedArray(); // Initiate animation of the sorted array
+                }
+            }
+        }
+    }
+
+
+
+
     private void animateSortedArray() {
         timer = new Timer(250, e -> {
             currentBlueIndex++;
@@ -199,5 +280,4 @@ class DrawCanvas extends JPanel implements ActionListener {
         });
         timer.start();
     }
-
 }
